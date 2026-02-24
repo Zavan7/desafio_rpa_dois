@@ -1,6 +1,6 @@
 from playwright.sync_api import Page
 
 
-class LoginFailChalleng:
+class LoginFailChallenge:
     def __init__(self):
         ...
