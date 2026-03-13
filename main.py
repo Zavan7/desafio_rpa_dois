@@ -4,10 +4,14 @@ import os
 from time import sleep
 
 from pages.initial_page import InitialPage
-from pages.login_fail_challeng import LoginFailChallenge
+from pages.start_challenge import StartChallenge
+from pages.login_faill import LoginFaillChallenge
 
 load_dotenv()
 
+
+LOGIN_USER = os.getenv('USERNAME')
+PASSWORD_USER = os.getenv('PASSWORD')
 
 def second_challenge():
     url = 'https://practicetestautomation.com/'
@@ -25,7 +29,7 @@ def second_challenge():
         initial_page = InitialPage(url, selector_challenge_one)
         initial_page.practice_page(page)
 
-        login_fail = LoginFailChallenge(
+        page_challenge = StartChallenge(
             page,
             test_login_page,
             locator_login,
@@ -33,7 +37,16 @@ def second_challenge():
             submit_button
         )
 
-        login_fail.login_page()
+        page_challenge.login_page()
+
+        login_fail_challenge = LoginFaillChallenge(
+            page,
+            locator_login,
+            locator_password,
+            submit_button
+        )
+
+        login_fail_challenge.login_fail_challenge(LOGIN_USER, PASSWORD_USER)
 
         sleep(5)
 

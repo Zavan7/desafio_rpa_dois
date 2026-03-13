@@ -1,7 +1,7 @@
 from playwright.sync_api import Page
 
 
-class LoginFailChallenge:
+class StartChallenge:
     def __init__(
             self,
             page: Page,
