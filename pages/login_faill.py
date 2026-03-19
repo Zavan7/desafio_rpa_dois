@@ -1,23 +1,31 @@
 from playwright.sync_api import Page
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LoginFaillChallenge:
-    def __init__ (
-            self,
-            page: Page,
-            user_selector: str,
-            password_selector: str,
-            button_selector: str,
-            timeout = 4000
-        ):
+    def __init__(
+        self,
+        page: Page,
+        user_selector: str,
+        password_selector: str,
+        button_selector: str,
+        timeout=4000
+    ):
         self.page = page
         self.user_selector = user_selector
         self.password_selector = password_selector
         self.button_selector = button_selector
         self.timeout = timeout
 
-    def login_fail_challenge(self, login_user: str, password: str):
+    def login_fail_challenge(self, login_user: str, password: str) -> bool:
         try:
+            logger.info(
+                "Iniciando tentativa de login (esperando falha)",
+                extra={"user": login_user}
+            )
+
             self.page.wait_for_selector(
                 self.user_selector,
                 timeout=self.timeout
@@ -26,9 +34,32 @@ class LoginFaillChallenge:
             self.page.locator(self.user_selector).fill(login_user)
             self.page.locator(self.password_selector).fill(password)
 
+            logger.debug("Campos de login preenchidos")
+
             self.page.locator(self.button_selector).click()
 
-            print('Sucesso na falha de login, isso mesmo, sucesso na falha')
+            logger.info(
+                "Login executado (falha esperada)",
+                extra={"user": login_user}
+            )
 
-        except Exception as e:
-            print (f'Log de erro ao fazer o fail login as {e}')
+            return True
+
+        except Exception:
+            logger.error(
+                "Erro ao executar login de falha",
+                exc_info=True,
+                extra={
+                    "user": login_user,
+                    "selector_user": self.user_selector,
+                    "selector_button": self.button_selector
+                }
+            )
+
+            # opcional: screenshot para debug
+            try:
+                self.page.screenshot(path="logs/error_login_fail.png")
+            except Exception:
+                logger.warning("Falha ao capturar screenshot do erro")
+
+            return False

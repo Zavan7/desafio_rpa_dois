@@ -1,56 +1,80 @@
 from playwright.sync_api import sync_playwright
 from dotenv import load_dotenv
 import os
+import logging
 from time import sleep
 
+from config.log import setup_logging
 from pages.initial_page import InitialPage
 from pages.start_challenge import StartChallenge
 from pages.login_faill import LoginFaillChallenge
 
-load_dotenv()
 
+# 🔥 inicializa logging (TEM QUE SER NO TOPO)
+setup_logging()
+logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 LOGIN_USER = os.getenv('USERNAME')
 PASSWORD_USER = os.getenv('PASSWORD')
+
 
 def second_challenge():
     url = 'https://practicetestautomation.com/'
     selector_challenge_one = '#menu-item-20'
     test_login_page = 'a[href*="practice-test-login"]'
-    test_login_page = 'a[href*="practice-test-login"]'
     locator_login = '#username'
     locator_password = '#password'
     submit_button = '#submit'
+
+    logger.info("Iniciando execução do desafio")
 
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=False)
         page = browser.new_page()
 
-        initial_page = InitialPage(url, selector_challenge_one)
-        initial_page.practice_page(page)
+        try:
+            initial_page = InitialPage(url, selector_challenge_one)
+            result_initial = initial_page.practice_page(page)
 
-        page_challenge = StartChallenge(
-            page,
-            test_login_page,
-            locator_login,
-            locator_password,
-            submit_button
-        )
+            if not result_initial:
+                logger.warning("Falha ao acessar página inicial")
+                return
 
-        page_challenge.login_page()
+            page_challenge = StartChallenge(
+                page,
+                test_login_page,
+                locator_login,
+                locator_password,
+                submit_button
+            )
 
-        login_fail_challenge = LoginFaillChallenge(
-            page,
-            locator_login,
-            locator_password,
-            submit_button
-        )
+            page_challenge.login_page()
 
-        login_fail_challenge.login_fail_challenge(LOGIN_USER, PASSWORD_USER)
+            login_fail_challenge = LoginFaillChallenge(
+                page,
+                locator_login,
+                locator_password,
+                submit_button
+            )
 
-        sleep(5)
+            result_login = login_fail_challenge.login_fail_challenge(
+                LOGIN_USER,
+                PASSWORD_USER
+            )
 
-        browser.close()
+            if not result_login:
+                logger.warning("Login falhou conforme esperado (cenário negativo)")
+
+            sleep(5)
+
+        except Exception:
+            logger.error("Erro crítico na execução do fluxo", exc_info=True)
+
+        finally:
+            browser.close()
+            logger.info("Execução finalizada")
 
 
 if __name__ == '__main__':
