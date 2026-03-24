@@ -1,5 +1,8 @@
 ## 📌 Automação de Teste com Playwright
 
+> ⚠️ **Disclaimer**
+> Esta aplicação ainda está em desenvolvimento ativo e pode sofrer alterações significativas na estrutura, funcionalidades e implementação ao longo do tempo.
+
 Este projeto implementa um fluxo de automação utilizando Playwright com Python, focado na validação de cenários de login com falha e verificação de mensagens exibidas na interface.
 
 ---
