@@ -5,8 +5,8 @@ logger = logging.getLogger(__name__)
 
 class Validation:
     def __init__(self, page: Page, msg_locator: str):
-        self.msg_locator = msg_locator
         self.page = page
+        self.msg_locator = msg_locator
 
     def final_validation(self):
         '''
