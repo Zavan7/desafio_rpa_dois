@@ -5,23 +5,24 @@ logger = logging.getLogger(__name__)
 
 
 class InitialPage:
-    def __init__(self, url: str, selector_page: str, timeout=4000):
+    def __init__(
+        self,
+        page: Page,
+        url: str,
+        selector_page: str,
+        timeout=4000
+    ):
+        self.page = page
         self.url = url
         self.selector_page = selector_page
         self.timeout = timeout
 
-    def practice_page(self, page: Page) -> bool:
+    def practice_page(self) -> bool:
 
         '''
         Iniciamos acessando a página inicial do desafio, onde iremos
         localizar e interagir com o elemento que dá início ao fluxo
         (ex: botão ou link para próxima etapa)
-
-        Recebe:
-        - URL da aplicação
-        - Page (objeto do Playwright)
-        - Seletor do elemento que inicia o desafio
-        - Timeout para espera dos elementos
 
         Fluxo:
         - Acessa a URL informada
@@ -42,14 +43,14 @@ class InitialPage:
                 extra={"url": self.url}
             )
 
-            page.goto(self.url)
+            self.page.goto(self.url)
 
-            page.wait_for_selector(
+            self.page.wait_for_selector(
                 self.selector_page,
                 timeout=self.timeout
             )
 
-            button = page.locator(self.selector_page)
+            button = self.page.locator(self.selector_page)
 
             if not button.is_enabled():
                 logger.warning(

@@ -1,15 +1,15 @@
-from playwright.sync_api import sync_playwright
-from dotenv import load_dotenv
 import os
 import logging
-from time import sleep
+from dotenv import load_dotenv
+from playwright.sync_api import sync_playwright
 
-from config.log import setup_logging
 from pages.initial_page import InitialPage
 from pages.start_challenge import StartChallenge
 from pages.login_faill import LoginFaillChallenge
 
 from validators.validator import Validation
+
+from config.log import setup_logging
 
 
 # 🔥 inicializa logging (TEM QUE SER NO TOPO)
@@ -26,7 +26,8 @@ def second_challenge():
 
     '''
     Orquestra o fluxo completo do desafio de automação utilizando Playwright,
-    validando o comportamento de login com falha e a exibição da mensagem de erro.
+    validando o comportamento de login com falha e a exibição da mensagem de
+    erro.
 
     Configurações:
     - Define URL da aplicação
@@ -67,8 +68,8 @@ def second_challenge():
         page = browser.new_page()
 
         try:
-            initial_page = InitialPage(url, selector_challenge_one)
-            result_initial = initial_page.practice_page(page)
+            initial_page = InitialPage(page, url, selector_challenge_one)
+            result_initial = initial_page.practice_page()
 
             if not result_initial:
                 logger.warning('Falha ao acessar página inicial')
@@ -99,10 +100,9 @@ def second_challenge():
             if not result_login:
                 logger.warning('Login falhou conforme esperado')
 
-            final_validation = Validation(msg_validator)
-            final_validation.final_validation(page)
+            final_validation = Validation(page, msg_validator)
+            final_validation.final_validation()
 
-            sleep(5)
 
         except Exception:
             logger.error('Erro crítico na execução do fluxo', exc_info=True)

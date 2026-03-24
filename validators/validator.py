@@ -4,10 +4,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Validation:
-    def __init__(self, msg_locator: str):
+    def __init__(self, page: Page, msg_locator: str):
         self.msg_locator = msg_locator
+        self.page = page
 
-    def final_validation(self, page: Page):
+    def final_validation(self):
         '''
         Realiza a validação final da automação, verificando se a mensagem
         esperada está visível na tela (ex: mensagem de erro ou sucesso)
@@ -26,7 +27,7 @@ class Validation:
         - False: mensagem não encontrada, não visível ou erro na execução
         '''
         try:
-            assert page.locator(self.msg_locator).is_visible()
+            assert self.page.locator(self.msg_locator).is_visible()
 
             logger.info('Validação de erro feita com sucesso')
 
