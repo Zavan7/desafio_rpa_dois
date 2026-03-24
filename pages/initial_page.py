@@ -11,6 +11,31 @@ class InitialPage:
         self.timeout = timeout
 
     def practice_page(self, page: Page) -> bool:
+
+        '''
+        Iniciamos acessando a página inicial do desafio, onde iremos
+        localizar e interagir com o elemento que dá início ao fluxo
+        (ex: botão ou link para próxima etapa)
+
+        Recebe:
+        - URL da aplicação
+        - Page (objeto do Playwright)
+        - Seletor do elemento que inicia o desafio
+        - Timeout para espera dos elementos
+
+        Fluxo:
+        - Acessa a URL informada
+        - Aguarda o elemento da página estar disponível
+        - Valida se o elemento está habilitado para interação
+        - Realiza o clique no elemento
+        - Registra logs de cada etapa do processo
+
+        Retorno:
+        - True: navegação e clique realizados com sucesso
+        - False: erro ao acessar a página, elemento não encontrado
+                 ou elemento desabilitado
+        '''
+
         try:
             logger.info(
                 "Acessando página",

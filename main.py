@@ -9,6 +9,8 @@ from pages.initial_page import InitialPage
 from pages.start_challenge import StartChallenge
 from pages.login_faill import LoginFaillChallenge
 
+from validators.validator import Validation
+
 
 # 🔥 inicializa logging (TEM QUE SER NO TOPO)
 setup_logging()
@@ -21,14 +23,44 @@ PASSWORD_USER = os.getenv('PASSWORD')
 
 
 def second_challenge():
+
+    '''
+    Orquestra o fluxo completo do desafio de automação utilizando Playwright,
+    validando o comportamento de login com falha e a exibição da mensagem de erro.
+
+    Configurações:
+    - Define URL da aplicação
+    - Define seletores necessários para navegação e interação
+    - Carrega credenciais via variáveis de ambiente
+
+    Fluxo:
+    - Inicializa o navegador e cria uma nova página
+    - Acessa a página inicial do desafio
+    - Navega até a página de login (Test Login Page)
+    - Executa tentativa de login com falha (credenciais inválidas)
+    - Realiza a validação da mensagem de erro exibida na tela
+    - Registra logs em cada etapa do processo
+    - Finaliza a execução encerrando o navegador
+
+    Tratamento de erros:
+    - Caso qualquer etapa falhe, registra erro crítico no log
+    - Cada componente já possui seu próprio tratamento interno
+
+    Retorno:
+    - None: função orquestradora, não retorna valor
+    - O sucesso ou falha deve ser analisado via logs da execução
+    '''
+
+
     url = 'https://practicetestautomation.com/'
     selector_challenge_one = '#menu-item-20'
     test_login_page = 'a[href*="practice-test-login"]'
     locator_login = '#username'
     locator_password = '#password'
     submit_button = '#submit'
+    msg_validator = '#error'
 
-    logger.info("Iniciando execução do desafio")
+    logger.info('Iniciando execução do desafio')
 
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=False)
@@ -39,7 +71,7 @@ def second_challenge():
             result_initial = initial_page.practice_page(page)
 
             if not result_initial:
-                logger.warning("Falha ao acessar página inicial")
+                logger.warning('Falha ao acessar página inicial')
                 return
 
             page_challenge = StartChallenge(
@@ -65,16 +97,19 @@ def second_challenge():
             )
 
             if not result_login:
-                logger.warning("Login falhou conforme esperado (cenário negativo)")
+                logger.warning('Login falhou conforme esperado')
+
+            final_validation = Validation(msg_validator)
+            final_validation.final_validation(page)
 
             sleep(5)
 
         except Exception:
-            logger.error("Erro crítico na execução do fluxo", exc_info=True)
+            logger.error('Erro crítico na execução do fluxo', exc_info=True)
 
         finally:
             browser.close()
-            logger.info("Execução finalizada")
+            logger.info('Execução finalizada')
 
 
 if __name__ == '__main__':

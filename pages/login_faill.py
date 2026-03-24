@@ -20,6 +20,28 @@ class LoginFaillChallenge:
         self.timeout = timeout
 
     def login_fail_challenge(self, login_user: str, password: str) -> bool:
+
+        '''
+        Iniciamos na página do desafio, onde iremos fazer o login falho.
+        A ideia aqui é realizar um login inválido para validar o comportamento
+        da aplicação em cenários de erro, incluindo logs e mensagens exibidas.
+
+        Recebe:
+        - Page (objeto do Playwright)
+        - Seletores dos campos de usuário, senha e botão
+        - Credenciais inválidas (login_user e password)
+
+        Fluxo:
+        - Aguarda o campo de usuário estar disponível na tela
+        - Preenche os campos de usuário e senha com os dados fornecidos
+        - Realiza o clique no botão de login
+        - Registra logs da execução do fluxo
+
+        Retorno:
+        - True: fluxo de login executado com sucesso (falha funcional esperada na aplicação)
+        - False: erro técnico ao executar o fluxo (ex: elemento não encontrado, timeout, falha de interação)
+        '''
+
         try:
             logger.info(
                 "Iniciando tentativa de login (esperando falha)",

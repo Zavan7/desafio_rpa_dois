@@ -22,6 +22,29 @@ class StartChallenge:
         self.timeout = timeout
 
     def login_page(self) -> bool:
+
+        '''
+        Iniciamos na página principal do desafio, onde iremos navegar
+        até a página de login (Test Login Page)
+
+        A ideia aqui é garantir que o elemento que direciona ao desafio
+        esteja visível e, em seguida, realizar o clique para navegação
+
+        Recebe:
+        - Page (objeto do Playwright)
+        - Locator do desafio (elemento que contém/acessa o challenge)
+        - Timeout para espera dos elementos
+
+        Fluxo:
+        - Aguarda o elemento do desafio estar visível
+        - Realiza o clique no link "Test Login Page"
+        - Confirma a navegação via logs
+
+        Retorno:
+        - True: navegação realizada com sucesso
+        - False: erro ao acessar a página de login
+        '''
+        
         try:
             logger.info(
                 "Acessando página de login do desafio",
