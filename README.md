@@ -65,5 +65,10 @@ O projeto utiliza logging estruturado para fornecer visibilidade completa da exe
 As credenciais são carregadas via `.env`:
 
 ```env
-USERNAME=seu_usuario
-PASSWORD=sua_senha
+USERNAME=CHANGE ME
+PASSWORD=CHANGE ME
+
+MONGO_URI=CHANGE ME
+MONGO_DB=rCHANGE ME
+
+USE_MONGO=CHANGE ME
