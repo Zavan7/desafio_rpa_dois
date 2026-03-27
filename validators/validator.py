@@ -29,7 +29,10 @@ class Validation:
         try:
             assert self.page.locator(self.msg_locator).is_visible()
 
-            logger.info('Validação de erro feita com sucesso')
+            logger.info(
+                'Validação de erro feita com sucesso \n'
+                f'Msg: {self.page.locator(self.msg_locator).inner_text()}'           
+            )
 
         except Exception as e:
             logger.error(f'Erro para validar o erro de login {e}')
