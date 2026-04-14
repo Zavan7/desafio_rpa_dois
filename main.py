@@ -1,4 +1,5 @@
 import os
+import time
 import logging
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
@@ -52,6 +53,19 @@ def second_challenge():
     - O sucesso ou falha deve ser analisado via logs da execução
     '''
 
+    result = {
+        'start_date': None,
+        'end_date': None,
+        'duraction': None,
+        'status': None,
+        'massage': None,
+        'error': None
+    }
+
+    start_date = time.time()
+    status = None
+    massage = None
+    error = None
 
     url = 'https://practicetestautomation.com/'
     selector_challenge_one = '#menu-item-20'
@@ -103,13 +117,38 @@ def second_challenge():
             final_validation = Validation(page, msg_validator)
             final_validation.final_validation()
 
+            status = 'Success'
 
-        except Exception:
+        except Exception as e:
             logger.error('Erro crítico na execução do fluxo', exc_info=True)
+
+            error = str(e)
 
         finally:
             browser.close()
             logger.info('Execução finalizada')
+            end_date = time.time()
+            duration = end_date - start_date
+
+            result['start_date'] = time.strftime(
+                '%d/%m/%Y %H:%M:%S',
+                time.localtime(start_date)
+            )
+
+            result['end_date'] = time.strftime(
+                '%d/%m/%Y %H:%M:%S',
+                time.localtime(end_date)
+            )
+
+            result['duraction'] = f'{duration:.2f}'
+
+
+            result['status'] = status
+            result['massage'] = massage
+            result['error'] = error
+
+            for r, e in result.items():
+                print(r, e)
 
 
 if __name__ == '__main__':
