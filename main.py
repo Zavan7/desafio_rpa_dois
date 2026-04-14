@@ -118,6 +118,7 @@ def second_challenge():
             final_validation.final_validation()
 
             status = 'Success'
+            massage = 'Sucesso ao validar login como falho'
 
         except Exception as e:
             logger.error('Erro crítico na execução do fluxo', exc_info=True)
