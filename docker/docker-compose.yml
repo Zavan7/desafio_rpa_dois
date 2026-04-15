@@ -11,16 +11,24 @@ services:
       - ../downloads:/app/downloads
     env_file:
       - ../.env
+    environment:
+      - ENVIRONMENT=docker
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
 
   mongo:
     image: mongo:7
-    container_name: mongo-automacao
-    ports:
-      - "27017:27017"
+    container_name: mongo
     volumes:
       - mongo_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mongo_data:

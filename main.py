@@ -1,71 +1,77 @@
 import os
-import time
 import logging
+from datetime import datetime, UTC
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 
+from db.mongo import MongoDB
 from pages.initial_page import InitialPage
 from pages.start_challenge import StartChallenge
 from pages.login_faill import LoginFaillChallenge
-
 from validators.validator import Validation
-
 from config.log import setup_logging
 
 
-# 🔥 inicializa logging (TEM QUE SER NO TOPO)
+load_dotenv()
+
 setup_logging()
 logger = logging.getLogger(__name__)
-
-load_dotenv()
 
 LOGIN_USER = os.getenv('USERNAME')
 PASSWORD_USER = os.getenv('PASSWORD')
 
+mongo = MongoDB()
+
 
 def second_challenge():
-
-    '''
-    Orquestra o fluxo completo do desafio de automação utilizando Playwright,
-    validando o comportamento de login com falha e a exibição da mensagem de
-    erro.
+    """
+    Orquestra a execução do fluxo de automação de teste de login utilizando
+    Playwright, incluindo navegação, tentativa de autenticação inválida,
+    validação da mensagem de erro e persistência do resultado no MongoDB.
 
     Configurações:
-    - Define URL da aplicação
-    - Define seletores necessários para navegação e interação
-    - Carrega credenciais via variáveis de ambiente
+    - Define a URL da aplicação alvo
+    - Configura os seletores necessários para navegação e interação
+    - Carrega credenciais a partir de variáveis de ambiente
+    - Inicializa integração com MongoDB via camada de persistência
 
-    Fluxo:
-    - Inicializa o navegador e cria uma nova página
-    - Acessa a página inicial do desafio
-    - Navega até a página de login (Test Login Page)
-    - Executa tentativa de login com falha (credenciais inválidas)
-    - Realiza a validação da mensagem de erro exibida na tela
-    - Registra logs em cada etapa do processo
-    - Finaliza a execução encerrando o navegador
+    Fluxo de execução:
+    1. Inicializa o navegador e cria uma nova página
+    2. Acessa a página inicial do desafio
+    3. Navega até a página de login
+    4. Executa tentativa de login com credenciais inválidas
+    5. Valida a exibição da mensagem de erro esperada
+    6. Registra logs em cada etapa do processo
+    7. Consolida os dados da execução (status, duração, erro, etc.)
+    8. Persiste o resultado na collection "executions" no MongoDB
+    9. Finaliza o navegador
 
     Tratamento de erros:
-    - Caso qualquer etapa falhe, registra erro crítico no log
-    - Cada componente já possui seu próprio tratamento interno
+    - Exceções são capturadas e registradas com stack trace
+    - O status da execução é definido como "Error" em caso de falha
+    - A mensagem e o erro são armazenados no resultado final
+    - A persistência do resultado é garantida no bloco "finally"
+
+    Persistência:
+    - Os dados da execução são armazenados como documento no MongoDB
+    - Campos principais: start_date, end_date, duration, status, message, error
+    - Datas são registradas em UTC (timezone-aware)
 
     Retorno:
-    - None: função orquestradora, não retorna valor
-    - O sucesso ou falha deve ser analisado via logs da execução
-    '''
+    - None: função orquestradora sem retorno explícito
+    - O resultado da execução é persistido no banco de dados
+    """
 
     result = {
         'start_date': None,
         'end_date': None,
-        'duraction': None,
-        'status': None,
-        'massage': None,
+        'duration': None,
+        'status': 'Running',
+        'message': None,
         'error': None
     }
 
-    start_date = time.time()
-    status = None
-    massage = None
-    error = None
+    start_date = datetime.now(UTC)
 
     url = 'https://practicetestautomation.com/'
     selector_challenge_one = '#menu-item-20'
@@ -86,8 +92,7 @@ def second_challenge():
             result_initial = initial_page.practice_page()
 
             if not result_initial:
-                logger.warning('Falha ao acessar página inicial')
-                return
+                raise Exception('Falha ao acessar página inicial')
 
             page_challenge = StartChallenge(
                 page,
@@ -96,7 +101,6 @@ def second_challenge():
                 locator_password,
                 submit_button
             )
-
             page_challenge.login_page()
 
             login_fail_challenge = LoginFaillChallenge(
@@ -106,50 +110,40 @@ def second_challenge():
                 submit_button
             )
 
-            result_login = login_fail_challenge.login_fail_challenge(
+            login_fail_challenge.login_fail_challenge(
                 LOGIN_USER,
                 PASSWORD_USER
             )
 
-            if not result_login:
-                logger.warning('Login falhou conforme esperado')
-
             final_validation = Validation(page, msg_validator)
             final_validation.final_validation()
 
-            status = 'Success'
-            massage = 'Sucesso ao validar login como falho'
+            result['status'] = 'Success'
+            result['message'] = 'Sucesso ao validar login como falho'
 
         except Exception as e:
             logger.error('Erro crítico na execução do fluxo', exc_info=True)
 
-            error = str(e)
+            result['status'] = 'Error'
+            result['error'] = str(e)
+            result['message'] = 'Erro na execução da automação'
 
         finally:
             browser.close()
             logger.info('Execução finalizada')
-            end_date = time.time()
-            duration = end_date - start_date
 
-            result['start_date'] = time.strftime(
-                '%d/%m/%Y %H:%M:%S',
-                time.localtime(start_date)
-            )
+            end_date = datetime.now(UTC)
+            duration = (end_date - start_date).total_seconds()
 
-            result['end_date'] = time.strftime(
-                '%d/%m/%Y %H:%M:%S',
-                time.localtime(end_date)
-            )
+            result['start_date'] = start_date
+            result['end_date'] = end_date
+            result['duration'] = duration
 
-            result['duraction'] = f'{duration:.2f}'
-
-
-            result['status'] = status
-            result['massage'] = massage
-            result['error'] = error
-
-            for r, e in result.items():
-                print(r, e)
+            try:
+                mongo.insert(result)
+                logger.info('Resultado salvo no MongoDB')
+            except Exception:
+                logger.error('Erro ao salvar no MongoDB', exc_info=True)
 
 
 if __name__ == '__main__':

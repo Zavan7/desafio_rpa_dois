@@ -1,24 +1,35 @@
+import os
 from pymongo import MongoClient
+from dotenv import load_dotenv
 
-connection_str = 'mongodb://localhost:27017/'
-client = MongoClient(connection_str)
-db_collection = client['automation_db']
+load_dotenv()
 
-collection = db_collection.get_collection('automation_two')
 
-print(db_collection)
-print(collection)
+class MongoDB:
 
-search_filter = {
-    '345': '123'
-}
+    def __init__(self):
+        use_mongo = os.getenv("USE_MONGO", "false").lower() == "true"
 
-collection.update_one(
-    search_filter,
-    {'$set': search_filter}
-    )
+        if not use_mongo:
+            self.enabled = False
+            return
 
-response = collection.find(search_filter)
+        env = os.getenv("ENVIRONMENT", "local")
 
-for r in response:
-    print(r)
+        if env == "docker":
+            uri = os.getenv("MONGO_URI_DOCKER")
+        else:
+            uri = os.getenv("MONGO_URI_LOCAL")
+
+        db_name = os.getenv("MONGO_DB", "default_db")
+
+        self.client = MongoClient(uri)
+        self.db = self.client[db_name]
+        self.collection = self.db["executions"]
+        self.enabled = True
+
+    def insert(self, data: dict):
+        if not self.enabled:
+            return None
+
+        return self.collection.insert_one(data)
