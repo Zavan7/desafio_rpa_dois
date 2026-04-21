@@ -128,14 +128,7 @@ Cada execução é armazenada no MongoDB com os seguintes campos:
 - `message`: Mensagem descritiva
 - `error`: Detalhes do erro (se aplicável)
 
-## 🧪 Testes
-
-Para executar testes (se implementados):
-```bash
-pytest
-```
-
-## 🤝 Contribuição
+##  Contribuição
 
 1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
